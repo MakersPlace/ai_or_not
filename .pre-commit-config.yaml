@@ -1,0 +1,64 @@
+# .pre-commit-config.yaml
+# Excluding auto generated code from pre-commit checks
+exclude: ".*server_pb2.*"
+repos:
+  - repo: local
+    hooks:
+      - id: isort
+        name: iSort (python)
+        entry: isort --force-single-line-imports --line-length 120 --profile black .
+        types: [python]
+        stages: [commit]
+        language: python
+  - repo: local
+    hooks:
+      - id: black
+        name: Black (python)
+        language_version: python3.10
+        entry: black --line-length 120 .
+        types: [python]
+        stages: [commit]
+        language: python
+  - repo: local
+    hooks:
+      - id: mypy
+        name: Mypy (python)
+        types: [python]
+        stages: [commit]
+        language: python
+        entry: bash -c 'mypy --show-error-codes --ignore-missing-imports --follow-imports skip --exclude finder/pipelines/ --exclude playground/ --exclude finder/service/protos/ --exclude finder/cicd/ --exclude lib/ .'
+  - repo: local
+    hooks:
+      - id: autoflake
+        name: Autoflake (python)
+        types: [python]
+        stages: [commit]
+        language: python
+        entry: bash -c 'autoflake --in-place --remove-duplicate-keys --remove-all-unused-imports --remove-unused-variables --recursive .'
+  - repo: local
+    hooks:
+      - id: nbqa-black
+        name: Notebook Black formatter
+        entry: nbqa black --line-length=120 .
+        language: python
+        types: [python]
+        stages: [commit]
+      - id: nbqa-pyupgrade
+        name: Notebook Python 3.7 syntax formatter
+        entry: nbqa pyupgrade .
+        language: python
+        types: [python]
+        stages: [commit]
+      - id: nbqa-isort
+        name: Notebook isort
+        entry: nbqa isort --float-to-top --line-length=120 .
+        language: python
+        types: [python]
+  - repo: local
+    hooks:
+      - id: jupyter-nb-clear-output
+        name: jupyter-nb-clear-output
+        files: \.ipynb$
+        stages: [commit]
+        language: system
+        entry: jupyter-nbconvert --ClearOutputPreprocessor.enabled=True --inplace
