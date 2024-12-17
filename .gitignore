@@ -1,0 +1,15 @@
+.DS_Store
+.vscode
+.notebooks_cache
+__pycache__
+cdk\.out
+cdk.context.json
+.ipynb_checkpoints
+cache
+.cache
+*.log
+.secrets.*
+.hypothesis/
+wandb
+*.data-*
+
