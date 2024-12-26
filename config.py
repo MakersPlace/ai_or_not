@@ -7,11 +7,8 @@ from typing import List
 
 import wandb
 from models.convnext import VisibleConvNextClassifier
-from models.dual_branch_classifier import DualBranchClassifier
-from models.dual_ensemble_classifier import DualEnsembleClassifier
 from models.invisible_features_classifier import InvisibleFeaturesClassifier
 from models.noise_residual_classifier import NoiseResidualClassifier
-from models.triple_branch_classifier import TripleBranchClassifier
 from models.visible_features_classifier import VisibleFeaturesClassifier
 
 # --------------------------------------------------------------
@@ -46,11 +43,8 @@ class ModelArchitectureEnum:
 ARCHITECTURES = [
     VisibleFeaturesClassifier,
     InvisibleFeaturesClassifier,
-    DualEnsembleClassifier,
     VisibleConvNextClassifier,
-    NoiseResidualClassifier,
-    DualBranchClassifier,
-    TripleBranchClassifier,
+    NoiseResidualClassifier
 ]
 
 # --------------------------------------------------------------
@@ -232,9 +226,10 @@ _CONFIG = {
     "CROP_TYPE": 0,
     # ----------------- Wandb config ----------------- #
     # TODO: Should be moved to secrets manager
-    "WANDB_API_KEY": "[API_KEY]",
-    "WANDB_ENTITY": "[ENTITY]",
-    "WANDB_PROJECT": "AiOrNot",
+    # Read from OS environment variables
+    "WANDB_API_KEY": os.getenv("WANDB_API_KEY"),
+    "WANDB_ENTITY": os.getenv("WANDB_ENTITY"),
+    "WANDB_PROJECT": os.getenv("WANDB_PROJECT"),
 }
 
 
