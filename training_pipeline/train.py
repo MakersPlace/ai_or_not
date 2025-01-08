@@ -9,16 +9,18 @@ from config import ARCHITECTURES
 from config import DEFAULT_PIPELINE_NAME
 from config import ModelArchitectureEnum
 from config import get_config
+from config import get_path_config
 from config import setup_wandb
 from data_processing.data_loader import DataLoader
 
-from models.ai_or_not.pipeline.data_processing.evaluate_model import evaluate_model
+from data_processing.evaluate_model import evaluate_model
 
 # WANDB Constants
 JOB_TYPE_SUFFIX = "rgb"
 RUNTIME_DATE_SUFFIX = "%m%d_%H%M"
 RUN_NAME_SUFFIX = datetime.now().strftime(RUNTIME_DATE_SUFFIX)
 CONFIGURATION = get_config()
+PATH_CONFIG = get_path_config(DEFAULT_PIPELINE_NAME)
 
 
 def train_model(train_dataset, validation_dataset, current_config):
@@ -26,7 +28,7 @@ def train_model(train_dataset, validation_dataset, current_config):
     model_architecture = current_config["MODEL_ARCHITECTURE"]
     if not (
         model_architecture >= ModelArchitectureEnum.VISIBLE_FEATURES
-        and model_architecture <= ModelArchitectureEnum.TRIPLE_BRANCH
+        and model_architecture <= ModelArchitectureEnum.NOISE_RESIDUAL
     ):
         raise ValueError(f"Invalid model architecture: {model_architecture}")
 
@@ -41,6 +43,14 @@ def load_training_data(current_config):
     train_dataset = data_loader.load_and_augment_dataset(current_config["TF_TRAIN_DATASET_PATH"])
     validation_dataset = data_loader.load_dataset(current_config["TF_VALIDATION_DATASET_PATH"])
     return train_dataset, validation_dataset
+
+
+def update_path_config_with_pipeline_name(pipeline_name):
+    if pipeline_name != DEFAULT_PIPELINE_NAME:
+        log.info(f"Pipeline Name: {args.pipeline_name}")
+        # Reinstantiate the configuration with the new pipeline name
+        global PATH_CONFIG
+        PATH_CONFIG = get_path_config(args.pipeline_name)
 
 
 def parse_args():
@@ -64,7 +74,6 @@ def get_directory_config(args):
     validation_dataset_path = f"{train_data_prefix}/validation_dataset"
     test_dataset_path = f"{train_data_prefix}/testing_datasets"
     denoiser_model_path = "./cache/dncnn_s1_1028_0147_ai_48/saved_model"
-    checkpoints_path = f"{args.sm_model_dir}/checkpoints"
 
     return {
         "TF_TRAIN_DATASET_PATH": train_dataset_path,
@@ -72,7 +81,7 @@ def get_directory_config(args):
         "TF_TEST_DATASET_PATH": test_dataset_path,
         "DENOISER_MODEL_PATH": denoiser_model_path,
         "MODEL_DIR": args.sm_model_dir,
-        "CHECKPOINTS_PATH": checkpoints_path,
+        "CHECKPOINTS_PATH": PATH_CONFIG["SM_CHECKPOINTS_PATH"],
     }
 
 
@@ -97,11 +106,21 @@ def setup_env_confg(args):
 if __name__ == "__main__":
     args, unknown = parse_args()
 
+    log.info(f"Pipeline Name: {args.pipeline_name} ")
+    log.info(f"Environment: {args.environment} ")
+
     # Setup Env Config
+    update_path_config_with_pipeline_name(args.pipeline_name)
     current_config = setup_env_confg(args)
 
     # Start Wandb Run
-    wandb_run = setup_wandb(args.pipeline_name, args.environment, current_config)
+    wandb_run = setup_wandb(
+        args.pipeline_name,
+        args.environment,
+        current_config,
+        "train",
+    )
+    wandb_run.config.update(current_config)
     log.info("----------------- Training Config -----------------")
     log.info(f"Model Architecture: {current_config['MODEL_ARCHITECTURE']}")
     log.info(f"Image Size: {current_config['IM_SIZE']}")

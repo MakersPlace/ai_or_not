@@ -29,7 +29,12 @@ class DataLoader:
     def get_training_data_augmentation(self):
         data_augmentation = [
             # Trainging data has compressed images in LAION Dataset
-            JPEGCompression(name="jpeg_compression", quality_range=(30, 100), frequency=0.5, seed=self.config["SEED"]),
+            JPEGCompression(
+                name="jpeg_compression",
+                quality_range=(30, 100),
+                probability=0.5,
+                seed=self.config["SEED"],
+            ),
             tf.keras.layers.Lambda(
                 lambda image: tf.image.random_flip_left_right(image, seed=self.config["SEED"]),
                 name="random_flip_left_right",

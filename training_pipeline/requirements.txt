@@ -1,0 +1,3 @@
+# Pipeline dependencies
+wandb==0.19.1
+scikit-learn==1.5.2

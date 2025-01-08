@@ -1,6 +1,7 @@
 import argparse
 import logging as log
 import os
+import sys
 from datetime import datetime
 from io import BytesIO
 from typing import Any
@@ -239,10 +240,13 @@ def download_sample_image(sample_dataset):
 
         image_file = tf.io.read_file(sample_image_path)
         image = Image.open(BytesIO(image_file.numpy()))
-        image.save(f"{PATH_CONFIG['CACHE_PATH']}/s3_sample_image.png")
-        image = Image.open(f"{PATH_CONFIG['CACHE_PATH']}/s3_sample_image.png")
+        sample_image_write_path = f"{PATH_CONFIG['CACHE_PATH']}/s3_sample_image.png"
+        log.info(f"Saving Sample Image to {sample_image_write_path}")
+        image.save(sample_image_write_path)
+        image = Image.open(sample_image_write_path)
         log.info(
-            f"Sample Image Path: {sample_image_path}   "
+            f"Sample Image Read Path: {sample_image_path}   "
+            f"Sample Image Write Path: {sample_image_write_path}   "
             f"Label: {sample_label}   "
             f"Metadata File: {sample_metadata_file}"
         )
@@ -327,7 +331,14 @@ def update_path_config_with_pipeline_name(pipeline_name):
 
 def execute(args):
     # Setup WANDB
-    wandb_run = setup_wandb(args.pipeline_name, args.environment, CONFIGURATION)
+    wandb_run = setup_wandb(
+        args.pipeline_name,
+        args.environment,
+        CONFIGURATION,
+        "data_generation",
+    )
+
+    wandb_run.config.update(CONFIGURATION)
 
     # Set Global seed
     # Sets seeds for Python, Tensorflow and Numpy
@@ -425,22 +436,24 @@ def execute(args):
     # Create Test Datasets
     create_test_datasets(test_run)
 
-    if IS_SAGEMAKER:
-        log.info("Syncing Local OUTPUT directory to S3")
-        os.system(f"aws s3 sync {PATH_CONFIG['OUTPUT_PATH']} {PATH_CONFIG['S3_DATA_GENERATION_OUTPUT_PATH']} --quiet")
-
     log.info("----------------------------------")
     log.info("--- Data Generation Completed ---")
     log.info("----------------------------------")
 
-    # Finish wandb run
+    # Finish wandb run.
     wandb_run.finish()
+
+    return
 
 
 if __name__ == "__main__":
 
+    args, unknown = parse_args()
     log.info(f"TF: {tf.__version__} ")
     log.info(f"TFIO: {tfio.__version__} ")
+    log.info(f"Pipeline Name: {args.pipeline_name} ")
+    log.info(f"Environment: {args.environment} ")
 
-    args, unknown = parse_args()
     execute(args)
+
+    log.info("Completed Data Generation Step")

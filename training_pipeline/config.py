@@ -33,18 +33,15 @@ log.basicConfig(
 class ModelArchitectureEnum:
     VISIBLE_FEATURES = 0
     INVISIBLE_FEATURES = 1
-    DUAL_ENSEMBLE = 2
-    VISIBLE_CONV_NEXT = 3
-    NOISE_RESIDUAL = 4
-    MULTI_BRANCH = 5
-    TRIPLE_BRANCH = 6
+    VISIBLE_CONV_NEXT = 2
+    NOISE_RESIDUAL = 3
 
 
 ARCHITECTURES = [
     VisibleFeaturesClassifier,
     InvisibleFeaturesClassifier,
     VisibleConvNextClassifier,
-    NoiseResidualClassifier
+    NoiseResidualClassifier,
 ]
 
 # --------------------------------------------------------------
@@ -179,12 +176,12 @@ TEST_DATASET_DRECTORIES: Dict[str, List[tuple[str, int, float]]] = {
 
 
 def override_test_config(current_config):
-    current_config["TEST_RUN"] = True
+    current_config["TEST_RUN"] = False
 
     if current_config["TEST_RUN"]:
-        current_config["APPROX_DATASET_SIZE"] = 10_000
-        current_config["N_EPOCHS"] = 2
-        current_config["TEST_DATASET_PERCENTAGE"] = 0.01
+        current_config["APPROX_DATASET_SIZE"] = 900_000  # 10_000
+        current_config["N_EPOCHS"] = 20  # 2
+        current_config["TEST_DATASET_PERCENTAGE"] = 1.0  # 0.01
 
         if current_config["IS_SAGEMAKER"]:
             current_config["MIXED_PRECISION"] = True
@@ -227,9 +224,9 @@ _CONFIG = {
     # ----------------- Wandb config ----------------- #
     # TODO: Should be moved to secrets manager
     # Read from OS environment variables
-    "WANDB_API_KEY": os.getenv("WANDB_API_KEY"),
-    "WANDB_ENTITY": os.getenv("WANDB_ENTITY"),
-    "WANDB_PROJECT": os.getenv("WANDB_PROJECT"),
+    "WANDB_API_KEY": "[API_KEY]",
+    "WANDB_ENTITY": "makersplace",
+    "WANDB_PROJECT": "open-model",
 }
 
 
@@ -291,26 +288,6 @@ def get_config():
     return current_config
 
 
-# Update the path configuration based on the environment
-def update_path_config(path_config, IS_SAGEMAKER):
-    if IS_SAGEMAKER:
-        path_config["INPUT_PATH"] = path_config["SM_DATA_GENERATION_INPUT_PATH"]
-        path_config["OUTPUT_PATH"] = path_config["SM_DATA_GENERATION_OUTPUT_PATH"]
-        path_config["CACHE_PATH"] = f"{path_config['OUTPUT_PATH']}/cache"
-        path_config["INPUT_DATA_PATH"] = path_config["S3_DATA_GENERATION_INPUT_PATH"]
-        path_config["TRAINING_DATASET_PATH"] = path_config["TRAINING_DATASET_PATH"]
-        path_config["VALIDATION_DATASET_PATH"] = path_config["VALIDATION_DATASET_PATH"]
-        path_config["TESTING_DATASET_PATH"] = path_config["TESTING_DATASET_PATH"]
-    else:
-        path_config["INPUT_PATH"] = path_config["LOCAL_INPUT_PATH"]
-        path_config["OUTPUT_PATH"] = path_config["LOCAL_OUTPUT_PATH"]
-        path_config["CACHE_PATH"] = f"{path_config['OUTPUT_PATH']}/cache"
-        path_config["INPUT_DATA_PATH"] = path_config["LOCAL_DATA_GENERATION_INPUT_PATH"]
-        path_config["TRAINING_DATASET_PATH"] = path_config["LOCAL_TRAINING_DATASET_PATH"]
-        path_config["VALIDATION_DATASET_PATH"] = path_config["LOCAL_VALIDATION_DATASET_PATH"]
-        path_config["TESTING_DATASET_PATH"] = path_config["LOCAL_TESTING_DATASET_PATH"]
-
-
 def get_path_config(pipeline_name):
     data_generation_output_prefix = "data_generation/output"
     training_output_prefix = "training/output"
@@ -321,6 +298,7 @@ def get_path_config(pipeline_name):
     path_config = {
         # INPUT RAW DATA S3 PATHS
         "S3_BUCKET": S3_BUCKET,
+        "S3_DATA_GENERATION_OUTPUT_PATH": s3_data_generation_output_path,
         # ------------------------------------------------------------------ #
         # -------------------------- TRAINING PATHS ------------------------ #
         # ------------------------------------------------------------------ #
@@ -337,7 +315,7 @@ def get_path_config(pipeline_name):
         # --------------------- REMOTE DATA GENERATION STEP ---------------------- #
         path_config["INPUT_PATH"] = "/opt/ml/processing/input"
         path_config["OUTPUT_PATH"] = f"s3://{S3_BUCKET}/{S3_COMMON_PREFIX}/ai_or_not_datasets"
-        path_config["CACHE_PATH"] = f"{path_config['OUTPUT_PATH']}/cache"
+        path_config["CACHE_PATH"] = f"{path_config['INPUT_PATH']}/cache"
         path_config["INPUT_DATA_PATH"] = f"s3://{S3_BUCKET}/{S3_COMMON_PREFIX}/ai_or_not_datasets"
         path_config["TRAINING_DATASET_PATH"] = f"{s3_data_generation_output_path}/training_dataset"
         path_config["VALIDATION_DATASET_PATH"] = f"{s3_data_generation_output_path}/validation_dataset"
@@ -355,18 +333,19 @@ def get_path_config(pipeline_name):
     return path_config
 
 
-def setup_wandb(pipeline_name, environment, current_config):
-    wandb_mode = "online" if IS_SAGEMAKER else "offline"
+def setup_wandb(pipeline_name, environment, current_config, step_name):
+    # wandb_mode = "online" if IS_SAGEMAKER else "offline"
+    wandb_mode = "offline"
     os.environ["WANDB_MODE"] = wandb_mode
     wandb.login(key=current_config["WANDB_API_KEY"])
-    run_name_suffix = pipeline_name.split("-")[-1]
+    run_name_suffix = pipeline_name.split("-")[-1].strip()
+
     return wandb.init(
-        id=pipeline_name,
-        name=run_name_suffix,
+        id=f"{run_name_suffix}_{step_name}",
+        name=f"{run_name_suffix}_{step_name}",
         entity=current_config["WANDB_ENTITY"],
         project=f"{current_config['WANDB_PROJECT']}-{environment}",
-        job_type=f"{current_config['MODEL_ARCHITECTURE']}",
-        resume="allow",
-        config=current_config,
-        settings=wandb.Settings(start_method="fork"),
+        group=f"{run_name_suffix}",
+        job_type=f"{step_name}_{current_config['MODEL_ARCHITECTURE']}",
+        settings=wandb.Settings(start_method="fork", init_timeout=120),
     )

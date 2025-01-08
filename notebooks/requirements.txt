@@ -1,0 +1,2 @@
+# Pipeline dependencies
+tensorflow==2.14.1

@@ -27,7 +27,7 @@ ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRol
 
 COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
 GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
-VOLUME_SIZE = 200
+VOLUME_SIZE = 1000
 
 
 def create_processor_step(pipeline_session, environment):
@@ -36,7 +36,7 @@ def create_processor_step(pipeline_session, environment):
 
     data_processor = TensorFlowProcessor(
         base_job_name=job_name,
-        framework_version="2.14.1",
+        framework_version="2.14",
         py_version="py310",
         role=ROLE,
         instance_type=COMPUTE_INSTANCE_TYPE,
@@ -66,7 +66,7 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         instance_count=1,
         instance_type=GPU_INSTANCE_TYPE,
         volume_size=VOLUME_SIZE,
-        framework_version="2.14.1",
+        framework_version="2.14",
         py_version="py310",
         source_dir=".",
         max_run=CURRNET_CONFIG["MaxRuntimeInSeconds"],
@@ -112,9 +112,13 @@ def get_training_data_uri(pipeline_session):
 
 def execute_pipeline(args):
     pipeline_session = get_pipeline_session(args.environment)
-
+    log.info(f"pipeline_session: {pipeline_session}")
     processing_step = create_processor_step(pipeline_session, args.environment)
-    training_step = get_training_step(pipeline_session, get_training_data_uri(pipeline_session), args.environment)
+    training_step = get_training_step(
+        pipeline_session,
+        get_training_data_uri(pipeline_session),
+        args.environment,
+    )
     training_step.add_depends_on([processing_step])
 
     pipeline = Pipeline(
@@ -148,7 +152,7 @@ if __name__ == "__main__":
     log.info(f"Model Architecture: {CURRNET_CONFIG['MODEL_ARCHITECTURE']}")
     log.info(f"Image Size: {CURRNET_CONFIG['IM_SIZE']}")
     log.info(f"Batch Size: {CURRNET_CONFIG['BATCH_SIZE']}")
-    log.info(f"Data uri: {PATH_CONFIG['S3_DATA_GENERATION_INPUT_PATH']}")
+    log.info(f"Data uri: {PATH_CONFIG['S3_DATA_GENERATION_OUTPUT_PATH']}")
     log.info(f"Max Runtime: {int(CURRNET_CONFIG['MaxRuntimeInSeconds']/(60*60*24))} days")
 
     execute_pipeline(args)

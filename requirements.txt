@@ -1,2 +1,0 @@
-wandb==0.16.5
-scikit-learn==1.4.0

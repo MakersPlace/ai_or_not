@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from wandb.keras import WandbCallback
+from wandb.integration.keras import WandbCallback
 
 
 class BaseModel:
