@@ -3,12 +3,11 @@ import json
 import logging as log
 
 import boto3
-import os
 from config import PIPELINE_PREFIX
 from config import RUN_NAME_SUFFIX
 from config import get_config
-from config import get_path_config
 from config import get_environment_variables
+from config import get_path_config
 from sagemaker.inputs import TrainingInput
 from sagemaker.tensorflow import TensorFlow
 from sagemaker.tensorflow import TensorFlowProcessor

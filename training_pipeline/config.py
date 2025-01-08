@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Dict
 from typing import List
 
-import wandb
 from models.convnext import VisibleConvNextClassifier
 from models.invisible_features_classifier import InvisibleFeaturesClassifier
 from models.noise_residual_classifier import NoiseResidualClassifier
 from models.visible_features_classifier import VisibleFeaturesClassifier
+
+import wandb
 
 # --------------------------------------------------------------
 # CONSTANTS
@@ -176,12 +177,12 @@ TEST_DATASET_DRECTORIES: Dict[str, List[tuple[str, int, float]]] = {
 
 
 def override_test_config(current_config):
-    current_config["TEST_RUN"] = True
+    current_config["TEST_RUN"] = False
 
     if current_config["TEST_RUN"]:
-        current_config["APPROX_DATASET_SIZE"] = 10_000
-        current_config["N_EPOCHS"] = 2
-        current_config["TEST_DATASET_PERCENTAGE"] = 0.01
+        current_config["APPROX_DATASET_SIZE"] = 900_000  # 10_000
+        current_config["N_EPOCHS"] = 20  # 2
+        current_config["TEST_DATASET_PERCENTAGE"] = 1.0  # 0.01
 
         if current_config["IS_SAGEMAKER"]:
             current_config["MIXED_PRECISION"] = True

@@ -1,7 +1,6 @@
 import argparse
 import logging as log
 import os
-import sys
 from datetime import datetime
 from io import BytesIO
 from typing import Any

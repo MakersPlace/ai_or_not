@@ -1,9 +1,8 @@
 # Write a Simple gradio app to take image as input run a model on it and Returnt the Probability (0 to 1) as a confidence bar
 
 import gradio as gr
-import tensorflow as tf
 import numpy as np
-
+import tensorflow as tf
 from huggingface_hub import from_pretrained_keras
 
 REPO_ID = "ai-or-not/ai-or-not-model"

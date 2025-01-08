@@ -3,10 +3,11 @@ import logging as log
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import wandb
 from data_processing.data_loader import DataLoader
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+
+import wandb
 
 
 def get_multi_label_metrics(multi_label_true_labels, multi_label_predicted_logits):
