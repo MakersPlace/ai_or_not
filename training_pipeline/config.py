@@ -176,12 +176,12 @@ TEST_DATASET_DRECTORIES: Dict[str, List[tuple[str, int, float]]] = {
 
 
 def override_test_config(current_config):
-    current_config["TEST_RUN"] = False
+    current_config["TEST_RUN"] = True
 
     if current_config["TEST_RUN"]:
-        current_config["APPROX_DATASET_SIZE"] = 900_000  # 10_000
-        current_config["N_EPOCHS"] = 20  # 2
-        current_config["TEST_DATASET_PERCENTAGE"] = 1.0  # 0.01
+        current_config["APPROX_DATASET_SIZE"] = 10_000
+        current_config["N_EPOCHS"] = 2
+        current_config["TEST_DATASET_PERCENTAGE"] = 0.01
 
         if current_config["IS_SAGEMAKER"]:
             current_config["MIXED_PRECISION"] = True
@@ -222,11 +222,9 @@ _CONFIG = {
     "CACHE_DATASET": False,
     "CROP_TYPE": 0,
     # ----------------- Wandb config ----------------- #
-    # TODO: Should be moved to secrets manager
-    # Read from OS environment variables
-    "WANDB_API_KEY": "[API_KEY]",
-    "WANDB_ENTITY": "makersplace",
-    "WANDB_PROJECT": "open-model",
+    # WANDB_API_KEY, WANDB_ENTITY, WANDB_PROJECT are read from environment
+    # variables and passed to the Pipeline Steps
+    # Reference: https://docs.wandb.ai/guides/track/environment-variables/
 }
 
 
@@ -333,19 +331,24 @@ def get_path_config(pipeline_name):
     return path_config
 
 
+def get_environment_variables():
+    return {
+        "WANDB_API_KEY": os.environ.get("WANDB_API_KEY"),
+        "WANDB_ENTITY": os.environ.get("WANDB_ENTITY"),
+        "WANDB_PROJECT": os.environ.get("WANDB_PROJECT"),
+    }
+
+
 def setup_wandb(pipeline_name, environment, current_config, step_name):
-    # wandb_mode = "online" if IS_SAGEMAKER else "offline"
-    wandb_mode = "offline"
+    wandb_mode = "online" if IS_SAGEMAKER else "offline"
     os.environ["WANDB_MODE"] = wandb_mode
-    wandb.login(key=current_config["WANDB_API_KEY"])
     run_name_suffix = pipeline_name.split("-")[-1].strip()
 
     return wandb.init(
         id=f"{run_name_suffix}_{step_name}",
         name=f"{run_name_suffix}_{step_name}",
-        entity=current_config["WANDB_ENTITY"],
-        project=f"{current_config['WANDB_PROJECT']}-{environment}",
         group=f"{run_name_suffix}",
         job_type=f"{step_name}_{current_config['MODEL_ARCHITECTURE']}",
+        tags=[environment],
         settings=wandb.Settings(start_method="fork", init_timeout=120),
     )

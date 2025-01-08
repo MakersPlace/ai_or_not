@@ -3,10 +3,12 @@ import json
 import logging as log
 
 import boto3
+import os
 from config import PIPELINE_PREFIX
 from config import RUN_NAME_SUFFIX
 from config import get_config
 from config import get_path_config
+from config import get_environment_variables
 from sagemaker.inputs import TrainingInput
 from sagemaker.tensorflow import TensorFlow
 from sagemaker.tensorflow import TensorFlowProcessor
@@ -23,6 +25,7 @@ logger.setLevel(log.INFO)
 PIPELINE_NAME = f"{PIPELINE_PREFIX}-{RUN_NAME_SUFFIX}"
 PATH_CONFIG = get_path_config(PIPELINE_NAME)
 CURRNET_CONFIG = get_config()
+ENVIRONMENT_VARIABLES = get_environment_variables()
 ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRole-20230227T093535"
 
 COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
@@ -44,6 +47,7 @@ def create_processor_step(pipeline_session, environment):
         volume_size_in_gb=VOLUME_SIZE,
         max_runtime_in_seconds=CURRNET_CONFIG["MaxRuntimeInSeconds"],
         sagemaker_session=pipeline_session,
+        env=ENVIRONMENT_VARIABLES,
     )
 
     run_args = data_processor.run(
@@ -77,6 +81,7 @@ def get_training_step(pipeline_session, training_data_uri, environment):
             "pipeline_name": PIPELINE_NAME,
             "environment": environment,
         },
+        environment=ENVIRONMENT_VARIABLES,
     )
 
     train_args = classifier_estimator.fit(
