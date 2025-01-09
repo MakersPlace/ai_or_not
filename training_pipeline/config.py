@@ -315,7 +315,6 @@ def get_path_config(pipeline_name):
     if IS_SAGEMAKER:
         # --------------------- REMOTE DATA GENERATION STEP ---------------------- #
         path_config["INPUT_PATH"] = "/opt/ml/processing/input"
-        path_config["OUTPUT_PATH"] = f"s3://{S3_BUCKET}/{S3_COMMON_PREFIX}/ai_or_not_datasets"
         path_config["CACHE_PATH"] = f"{path_config['INPUT_PATH']}/cache"
         path_config["INPUT_DATA_PATH"] = f"s3://{S3_BUCKET}/{S3_COMMON_PREFIX}/ai_or_not_datasets"
         path_config["TRAINING_DATASET_PATH"] = f"{s3_data_generation_output_path}/training_dataset"
@@ -325,7 +324,6 @@ def get_path_config(pipeline_name):
         local_data_generation_output_path = f"{LOCAL_PATH_PREFIX}/{pipeline_name}/{data_generation_output_prefix}"
         # --------------------- LOCAL DATA GENERATION STEP ---------------------- #
         path_config["INPUT_PATH"] = f"{LOCAL_PATH_PREFIX}/{pipeline_name}"
-        path_config["OUTPUT_PATH"] = f"{local_data_generation_output_path}"
         path_config["CACHE_PATH"] = f"{path_config['OUTPUT_PATH']}/cache"
         path_config["INPUT_DATA_PATH"] = f"{LOCAL_PATH_PREFIX}/data"
         path_config["TRAINING_DATASET_PATH"] = f"{local_data_generation_output_path}/training_dataset"
