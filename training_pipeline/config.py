@@ -308,6 +308,7 @@ def get_path_config(pipeline_name):
         "SM_CHECKPOINTS_PATH": "/opt/ml/checkpoints",
         # S3 CHECKPOINTS PATH
         "S3_TRAINING_CHECKPOINTS_PATH": f"{pipeline_path}/{training_output_prefix}/checkpoints",
+        "S3_MODEL_OUTPUT_PATH": f"{pipeline_path}/{training_output_prefix}/model",
     }
 
     if IS_SAGEMAKER:

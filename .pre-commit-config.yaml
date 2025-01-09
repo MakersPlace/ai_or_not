@@ -37,6 +37,11 @@ repos:
         entry: bash -c 'autoflake --in-place --remove-duplicate-keys --remove-all-unused-imports --remove-unused-variables --recursive .'
   - repo: local
     hooks:
+      - id: nbqa-isort
+        name: Notebook isort
+        entry: nbqa isort --float-to-top --line-length=120 --profile=black .
+        language: python
+        types: [python]
       - id: nbqa-black
         name: Notebook Black formatter
         entry: nbqa black --line-length=120 .
@@ -49,11 +54,6 @@ repos:
         language: python
         types: [python]
         stages: [pre-commit]
-      - id: nbqa-isort
-        name: Notebook isort
-        entry: nbqa isort --float-to-top --line-length=120 .
-        language: python
-        types: [python]
   - repo: local
     hooks:
       - id: jupyter-nb-clear-output

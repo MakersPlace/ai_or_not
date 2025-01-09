@@ -171,7 +171,7 @@ def preprocess_and_save(dataset, shards, dataset_path, crop_type=CONFIGURATION["
     )
 
 
-def create_test_datasets(test_run):
+def create_test_datasets():
     test_dataset_counts: Dict[str, int] = {}
     test_label_counts: Dict[int, int] = {}
     dataset_length = 0
@@ -184,7 +184,7 @@ def create_test_datasets(test_run):
         current_dataset: tf.data.Dataset = None
         for test_directory_path, test_label, test_percentage in test_metadata_files:
             # For test run, and directory path does not contain "midjourney", update the test percentage
-            if test_run and "midjourney" not in test_directory_path:
+            if CONFIGURATION["TEST_RUN"] and "midjourney" not in test_directory_path:
                 test_percentage = CONFIGURATION["TEST_DATASET_PERCENTAGE"]
 
             if isinstance(test_directory_path, list):
@@ -331,6 +331,15 @@ def update_path_config_with_pipeline_name(pipeline_name):
         PATH_CONFIG = get_path_config(args.pipeline_name)
 
 
+def get_shard_count():
+    lower_shards = CONFIGURATION["TEST_RUN"] and CONFIGURATION["APPROX_DATASET_SIZE"] < 100_000
+
+    return (
+        200 if lower_shards else 1000,
+        50 if lower_shards else 200,
+    )
+
+
 def execute(args):
     # Setup WANDB
     wandb_run = setup_wandb(
@@ -349,10 +358,8 @@ def execute(args):
     # Update the Gloabal PATH_CONFIG with the pipeline name
     update_path_config_with_pipeline_name(args.pipeline_name)
 
-    # Constants
-    test_run = CONFIGURATION["TEST_RUN"]
-    training_data_shards = 200 if test_run else 1000
-    validation_data_shards = 50 if test_run else 200
+    # Shard
+    training_data_shards, validation_data_shards = get_shard_count()
 
     # Sanity check for metadata files
     check_if_metadata_files_exist()
@@ -383,7 +390,7 @@ def execute(args):
     )
 
     # If its a test run, filter to smaller size
-    if test_run:
+    if CONFIGURATION["TEST_RUN"]:
         files_list_dataset = files_list_dataset.take(CONFIGURATION["APPROX_DATASET_SIZE"])
 
     # Download a sample image to verify image paths and labels are correct
@@ -436,7 +443,7 @@ def execute(args):
     visualize_dataset(training_dataset.take(16), CONFIGURATION["CLASS_NAMES"], "training_dataset")
 
     # Create Test Datasets
-    create_test_datasets(test_run)
+    create_test_datasets()
 
     log.info("----------------------------------")
     log.info("--- Data Generation Completed ---")
