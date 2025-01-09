@@ -27,7 +27,6 @@ repos:
         stages: [pre-commit]
         language: python
         entry: bash -c 'mypy --show-error-codes --ignore-missing-imports --follow-imports skip --exclude finder/pipelines/ --exclude playground/ --exclude finder/service/protos/ --exclude finder/cicd/ --exclude lib/ .'
-        args: ["--ignore-missing-imports"]
   - repo: local
     hooks:
       - id: autoflake
