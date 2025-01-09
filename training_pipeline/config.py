@@ -292,7 +292,8 @@ def get_path_config(pipeline_name):
     training_output_prefix = "training/output"
     pipeline_path = f"s3://{S3_BUCKET}/{pipeline_name}"
     s3_data_generation_output_path = f"{pipeline_path}/{data_generation_output_prefix}"
-    local_data_generation_output_path = f"{LOCAL_PATH_PREFIX}/{pipeline_name}/{data_generation_output_prefix}"
+    s3_training_output_path = f"{pipeline_path}/{training_output_prefix}"
+
     # dict keys should be in caps
     path_config = {
         # INPUT RAW DATA S3 PATHS
@@ -307,8 +308,8 @@ def get_path_config(pipeline_name):
         "SM_MODEL_DIR": "/opt/ml/output/model",
         "SM_CHECKPOINTS_PATH": "/opt/ml/checkpoints",
         # S3 CHECKPOINTS PATH
-        "S3_TRAINING_CHECKPOINTS_PATH": f"{pipeline_path}/{training_output_prefix}/checkpoints",
-        "S3_MODEL_OUTPUT_PATH": f"{pipeline_path}/{training_output_prefix}/model",
+        "S3_TRAINING_CHECKPOINTS_PATH": f"{s3_training_output_path}/checkpoints",
+        "S3_MODEL_OUTPUT_PATH": f"{s3_training_output_path}/model",
     }
 
     if IS_SAGEMAKER:
@@ -321,6 +322,7 @@ def get_path_config(pipeline_name):
         path_config["VALIDATION_DATASET_PATH"] = f"{s3_data_generation_output_path}/validation_dataset"
         path_config["TESTING_DATASET_PATH"] = f"{s3_data_generation_output_path}/testing_datasets"
     else:
+        local_data_generation_output_path = f"{LOCAL_PATH_PREFIX}/{pipeline_name}/{data_generation_output_prefix}"
         # --------------------- LOCAL DATA GENERATION STEP ---------------------- #
         path_config["INPUT_PATH"] = f"{LOCAL_PATH_PREFIX}/{pipeline_name}"
         path_config["OUTPUT_PATH"] = f"{local_data_generation_output_path}"

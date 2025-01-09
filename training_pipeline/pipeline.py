@@ -75,7 +75,6 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         max_run=CURRNET_CONFIG["MaxRuntimeInSeconds"],
         checkpoint_s3_uri=PATH_CONFIG["S3_TRAINING_CHECKPOINTS_PATH"],
         checkpoint_local_path=PATH_CONFIG["SM_CHECKPOINTS_PATH"],
-        output_path=PATH_CONFIG["S3_MODEL_OUTPUT_PATH"],
         sagemaker_session=pipeline_session,
         hyperparameters={
             "pipeline_name": PIPELINE_NAME,
@@ -95,7 +94,7 @@ def get_training_step(pipeline_session, training_data_uri, environment):
 
 def get_pipeline_session(environment):
     default_bucket = PATH_CONFIG["S3_BUCKET"]
-    default_bucket_prefix = "ai-image-code"
+    default_bucket_prefix = PIPELINE_NAME
     if environment in ("dev", "development", "staging", "production"):
         boto_session = boto3.Session(profile_name=environment)
         return PipelineSession(
