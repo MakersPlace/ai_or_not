@@ -8,7 +8,7 @@ repos:
         name: iSort (python)
         entry: isort --force-single-line-imports --line-length 120 --profile black .
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
         language: python
   - repo: local
     hooks:
@@ -17,22 +17,23 @@ repos:
         language_version: python3.10
         entry: black --line-length 120 .
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
         language: python
   - repo: local
     hooks:
       - id: mypy
         name: Mypy (python)
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
         language: python
         entry: bash -c 'mypy --show-error-codes --ignore-missing-imports --follow-imports skip --exclude finder/pipelines/ --exclude playground/ --exclude finder/service/protos/ --exclude finder/cicd/ --exclude lib/ .'
+        args: ["--ignore-missing-imports"]
   - repo: local
     hooks:
       - id: autoflake
         name: Autoflake (python)
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
         language: python
         entry: bash -c 'autoflake --in-place --remove-duplicate-keys --remove-all-unused-imports --remove-unused-variables --recursive .'
   - repo: local
@@ -42,13 +43,13 @@ repos:
         entry: nbqa black --line-length=120 .
         language: python
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
       - id: nbqa-pyupgrade
         name: Notebook Python 3.7 syntax formatter
         entry: nbqa pyupgrade .
         language: python
         types: [python]
-        stages: [commit]
+        stages: [pre-commit]
       - id: nbqa-isort
         name: Notebook isort
         entry: nbqa isort --float-to-top --line-length=120 .
@@ -59,6 +60,6 @@ repos:
       - id: jupyter-nb-clear-output
         name: jupyter-nb-clear-output
         files: \.ipynb$
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: jupyter-nbconvert --ClearOutputPreprocessor.enabled=True --inplace

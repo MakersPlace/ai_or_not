@@ -47,12 +47,12 @@ dependencies:
       - srsly==2.4.6
 
       # Pre commit hooks
-      - pre-commit==3.6.2
+      - pre-commit==4.0.1
       - autoflake==2.3.1
-      - black==24.3.0
+      - black==24.10.0
       - isort==5.13.2
-      - mypy==1.9.0
-      - nbqa[toolchain]==1.8.4
+      - mypy==1.14.1
+      - nbqa[toolchain]==1.9.1
 
       # Lambda Deployment packages
       - aws-cdk-lib>=2.0.0
@@ -81,4 +81,5 @@ dependencies:
       - types-mock
 
       # Misc
-      - requests==2.28.1
+      - requests==2.32.3
+      - types-requests==2.32.0.20241016
