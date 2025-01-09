@@ -324,7 +324,7 @@ def get_path_config(pipeline_name):
         local_data_generation_output_path = f"{LOCAL_PATH_PREFIX}/{pipeline_name}/{data_generation_output_prefix}"
         # --------------------- LOCAL DATA GENERATION STEP ---------------------- #
         path_config["INPUT_PATH"] = f"{LOCAL_PATH_PREFIX}/{pipeline_name}"
-        path_config["CACHE_PATH"] = f"{path_config['OUTPUT_PATH']}/cache"
+        path_config["CACHE_PATH"] = f"{path_config['INPUT_PATH']}/cache"
         path_config["INPUT_DATA_PATH"] = f"{LOCAL_PATH_PREFIX}/data"
         path_config["TRAINING_DATASET_PATH"] = f"{local_data_generation_output_path}/training_dataset"
         path_config["VALIDATION_DATASET_PATH"] = f"{local_data_generation_output_path}/validation_dataset"
