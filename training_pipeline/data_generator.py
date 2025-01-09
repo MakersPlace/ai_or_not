@@ -59,7 +59,7 @@ def preprocess_image(file_path, crop_type):
         except Exception as e:
             log.error(f"Error decoding image: {file_path} - {e}")
             # crete dummy image
-            image = tf.zeros(shape=[im_size, im_size, CONFIGURATION["CHANNELS"]])
+            image = tf.zeros(shape=[1, 1, CONFIGURATION["CHANNELS"]])
 
         return image
 
@@ -161,6 +161,9 @@ def preprocess_and_save(dataset, shards, dataset_path, crop_type=CONFIGURATION["
         # random number between 0 and shards
         return tf.random.uniform(shape=[], maxval=shards, dtype=tf.int64, seed=CONFIGURATION["SEED"])
 
+    # filter out empty images if shape is not correct
+    dataset = dataset.filter(lambda x, y: tf.shape(x)[0] == CONFIGURATION["IM_SIZE"])
+
     log.info(f"Saving Dataset to {dataset_path}")
     prefetched_dataset = dataset.prefetch(tf.data.AUTOTUNE)
     prefetched_dataset.save(
@@ -180,8 +183,8 @@ def create_test_datasets(test_run):
 
         current_dataset: tf.data.Dataset = None
         for test_directory_path, test_label, test_percentage in test_metadata_files:
-            # For test run, filter to 50% of the dataset
-            if test_run:
+            # For test run, and directory path does not contain "midjourney", update the test percentage
+            if test_run and "midjourney" not in test_directory_path:
                 test_percentage = CONFIGURATION["TEST_DATASET_PERCENTAGE"]
 
             if isinstance(test_directory_path, list):

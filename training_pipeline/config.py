@@ -164,7 +164,7 @@ TEST_DATASET_DRECTORIES: Dict[str, List[tuple[str, int, float]]] = {
     # MidJourney Dataset
     # --------------------------------------------------------------
     "MidJourney": [
-        ("mp_datasets/midjourney/2023_10_29_metadata.csv", 2, 1),
+        ("mp_datasets/midjourney/2023_10_29_metadata.csv", 2, 0.2),
     ],
     # --------------------------------------------------------------
     # LAION Dataset
@@ -177,12 +177,12 @@ TEST_DATASET_DRECTORIES: Dict[str, List[tuple[str, int, float]]] = {
 
 
 def override_test_config(current_config):
-    current_config["TEST_RUN"] = False
+    current_config["TEST_RUN"] = True
 
     if current_config["TEST_RUN"]:
-        current_config["APPROX_DATASET_SIZE"] = 900_000  # 10_000
-        current_config["N_EPOCHS"] = 20  # 2
-        current_config["TEST_DATASET_PERCENTAGE"] = 1.0  # 0.01
+        current_config["APPROX_DATASET_SIZE"] = 10_000
+        current_config["N_EPOCHS"] = 2
+        current_config["TEST_DATASET_PERCENTAGE"] = 0.01
 
         if current_config["IS_SAGEMAKER"]:
             current_config["MIXED_PRECISION"] = True
@@ -247,7 +247,7 @@ def get_batch_size(current_config):
             return 16
     elif current_config["IM_SIZE"] == 224:
         if current_config["MIXED_PRECISION"] and current_config["MODEL_ARCHITECTURE"] < 5:
-            return 128  # larger batches might reduce test accuracy
+            return 64  # larger batches might reduce test accuracy
         else:
             return 32
     else:

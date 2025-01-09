@@ -6,3 +6,9 @@ Given an image, this model will give a probability between 0 and 1 that an image
 2. Training code can run on Mac or AWS. 
 3. Uses Weights and Biases for observability.
 
+# Training
+Please set below env variables before runnning the pipeline
+
+export WANDB_API_KEY=[API_KEY]
+export WANDB_ENTITY=makersplace
+export WANDB_PROJECT=open-model

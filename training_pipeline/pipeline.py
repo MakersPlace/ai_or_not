@@ -29,7 +29,7 @@ ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRol
 
 COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
 GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
-VOLUME_SIZE = 1000
+VOLUME_SIZE = 200
 
 
 def create_processor_step(pipeline_session, environment):
@@ -38,7 +38,7 @@ def create_processor_step(pipeline_session, environment):
 
     data_processor = TensorFlowProcessor(
         base_job_name=job_name,
-        framework_version="2.14",
+        framework_version="2.14.1",
         py_version="py310",
         role=ROLE,
         instance_type=COMPUTE_INSTANCE_TYPE,
@@ -69,7 +69,7 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         instance_count=1,
         instance_type=GPU_INSTANCE_TYPE,
         volume_size=VOLUME_SIZE,
-        framework_version="2.14",
+        framework_version="2.14.1",
         py_version="py310",
         source_dir=".",
         max_run=CURRNET_CONFIG["MaxRuntimeInSeconds"],
