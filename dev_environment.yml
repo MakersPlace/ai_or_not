@@ -22,7 +22,7 @@ dependencies:
       # # ML Frameworks
       - tensorflow==2.14.1
       - tensorflow-metal==1.1.0
-      - tensorflow-io==0.34.0
+      - tensorflow-io==0.37.1
       - scikit-learn==1.5.2
 
       # ML Libs

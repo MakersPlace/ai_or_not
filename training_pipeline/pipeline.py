@@ -27,7 +27,9 @@ CURRNET_CONFIG = get_config()
 ENVIRONMENT_VARIABLES = get_environment_variables()
 ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRole-20230227T093535"
 
-COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
+# COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
+COMPUTE_INSTANCE_TYPE = "ml.m5.2xlarge"  # 8 vCPUs, 32 GiB $0.461 USD/hour
+# COMPUTE_INSTANCE_TYPE = "ml.c5.4xlarge"  # 16 vCPUs, 32 GiB $0.816 USD/hour
 GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
 VOLUME_SIZE = 200
 

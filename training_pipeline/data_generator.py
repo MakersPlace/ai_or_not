@@ -57,7 +57,7 @@ def preprocess_image(file_path, crop_type):
             else:
                 raise ValueError(f"Image format {image.format} not supported")
         except Exception as e:
-            log.error(f"Error decoding image: {file_path} - {e}")
+            log.warning(f"Error decoding image: {file_path} - {e}")
             # crete dummy image
             image = tf.zeros(shape=[1, 1, CONFIGURATION["CHANNELS"]])
 
