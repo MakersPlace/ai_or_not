@@ -213,12 +213,11 @@ _CONFIG = {
     "VERBOSE": 1,
     # ----------------- Data config ----------------- #
     "SUPPORTED_FORMATS": ["bmp", "gif", "jpeg", "png", "webp"],
-    "APPROX_DATASET_SIZE": 1_725_138,
+    "APPROX_DATASET_SIZE": 1_600_000,
     "VALIDATION_SPLIT": 0.2,
     "CLASS_NAMES": ["REAL", "GAN", "DIFFUSION"],
     "BINARY_CLASS_NAMES": ["REAL", "FAKE"],
     "CHANNELS": 3,
-    "SHARDS": 1_000,
     "COMPRESSION_TYPE": "GZIP",
     "CACHE_DATASET": False,
     "CROP_TYPE": 0,

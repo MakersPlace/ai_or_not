@@ -28,10 +28,10 @@ ENVIRONMENT_VARIABLES = get_environment_variables()
 ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRole-20230227T093535"
 
 # COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
-COMPUTE_INSTANCE_TYPE = "ml.m5.2xlarge"  # 8 vCPUs, 32 GiB $0.461 USD/hour
-# COMPUTE_INSTANCE_TYPE = "ml.c5.4xlarge"  # 16 vCPUs, 32 GiB $0.816 USD/hour
+# COMPUTE_INSTANCE_TYPE = "ml.m5.2xlarge"  # 8 vCPUs, 32 GiB $0.461 USD/hour
+COMPUTE_INSTANCE_TYPE = "ml.m5.4xlarge"  # 16 vCPUs, 64 GiB $0.922 USD/hour
 GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
-VOLUME_SIZE = 200
+VOLUME_SIZE = 1_000
 
 
 def create_processor_step(pipeline_session, environment):
@@ -65,6 +65,13 @@ def create_processor_step(pipeline_session, environment):
 def get_training_step(pipeline_session, training_data_uri, environment):
     job_name = "training-step"
 
+    if environment == "local":
+        checkpoint_s3_uri = None
+        checkpoint_local_path = None
+    else:
+        checkpoint_s3_uri = PATH_CONFIG["S3_TRAINING_CHECKPOINTS_PATH"]
+        checkpoint_local_path = PATH_CONFIG["SM_CHECKPOINTS_PATH"]
+
     classifier_estimator = TensorFlow(
         entry_point="train.py",
         role=ROLE,
@@ -75,8 +82,8 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         py_version="py310",
         source_dir=".",
         max_run=CURRNET_CONFIG["MaxRuntimeInSeconds"],
-        checkpoint_s3_uri=PATH_CONFIG["S3_TRAINING_CHECKPOINTS_PATH"],
-        checkpoint_local_path=PATH_CONFIG["SM_CHECKPOINTS_PATH"],
+        checkpoint_s3_uri=checkpoint_s3_uri,
+        checkpoint_local_path=checkpoint_local_path,
         sagemaker_session=pipeline_session,
         hyperparameters={
             "pipeline_name": PIPELINE_NAME,

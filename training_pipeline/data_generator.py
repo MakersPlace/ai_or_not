@@ -142,6 +142,8 @@ def get_dataset(metadata_file, label, percentage):
 
     dataset = dataset.map(
         lambda file_path: (tf.strings.join([parent_path, file_path], separator="/"), label, metadata_file),
+        num_parallel_calls=tf.data.AUTOTUNE,
+        deterministic=False,
     )
 
     # filter out based on percentage
@@ -160,9 +162,6 @@ def preprocess_and_save(dataset, shards, dataset_path, crop_type=CONFIGURATION["
     def custom_shard_func(ignore1, ignore2):
         # random number between 0 and shards
         return tf.random.uniform(shape=[], maxval=shards, dtype=tf.int64, seed=CONFIGURATION["SEED"])
-
-    # filter out empty images if shape is not correct
-    dataset = dataset.filter(lambda x, y: tf.shape(x)[0] == CONFIGURATION["IM_SIZE"])
 
     log.info(f"Saving Dataset to {dataset_path}")
     prefetched_dataset = dataset.prefetch(tf.data.AUTOTUNE)
@@ -335,7 +334,7 @@ def get_shard_count():
     lower_shards = CONFIGURATION["TEST_RUN"] and CONFIGURATION["APPROX_DATASET_SIZE"] < 100_000
 
     return (
-        200 if lower_shards else 1000,
+        200 if lower_shards else 1_000,
         50 if lower_shards else 200,
     )
 

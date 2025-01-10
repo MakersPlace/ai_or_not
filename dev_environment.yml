@@ -23,6 +23,7 @@ dependencies:
       - tensorflow==2.14.1
       - tensorflow-metal==1.1.0
       - tensorflow-io==0.37.1
+      - tensorboard-plugin-profile==2.18.0
       - scikit-learn==1.5.2
 
       # ML Libs
