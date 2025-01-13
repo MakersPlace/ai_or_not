@@ -9,7 +9,7 @@ Demo : [Huggingface Space](https://huggingface.co/spaces/konerusudhir/ai-or-not-
 
 
 # Datasets
-Below are the datasets used for traiing and evaluating the model. Datasets are chosen solve the problem of
+Below are the datasets used for training and evaluating the model. Datasets are chosen to solve the problem of
 identifying Low effort AI generated Crypto Art. Approxmately 1.35 Million images are used for trianing, 350K for Validation and 500K Images are used for testing. For more details refer [Training Report](https://wandb.ai/makersplace/open-model/reports/AI-Generated-Image-Detection-Model-Report--VmlldzoxMDkyMzYzNA?accessToken=lu9435jahbicmqtnsrnfs76ctuxzb2p3ik7xi2tgk7i7k8sn02zv60hdnqbnq145)
 
 <table>
@@ -109,7 +109,7 @@ For evaluation, we employed multiple datasets to test the generalization capabil
 
 # Sample code
 
-Below is the sample code test the model on a single image. Refer notebooks folder for more examples.
+Below is the sample code to test the model on a single image. Refer notebooks folder for more examples.
 
 ```
 from PIL import Image
