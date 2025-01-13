@@ -149,7 +149,7 @@ print(f"AI Image Prediction: {ai_probability:.2f}")
 [Huggingface Model](https://huggingface.co/konerusudhir/ai-or-not-model)
 
 # Training
-Please set below env variables before running the training pipeline(pipeline.py). Dataset tarfiles will be released in coming weeks.
+Please set below env variables before running the training pipeline(pipeline.py). Training details and Dataset tar files will be released in coming weeks.
 
 export WANDB_API_KEY=[API_KEY]
 

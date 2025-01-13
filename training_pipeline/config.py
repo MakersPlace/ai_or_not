@@ -55,7 +55,7 @@ IS_SAGEMAKER = Path("/opt/ml").exists()
 
 
 # S3 PATH INFO
-S3_BUCKET = "mp-ml-data-dev"
+S3_BUCKET = "[S3_BUCKET]"
 S3_COMMON_PREFIX = "finder/ai_or_not"
 
 # LOCAL PATH INFO
