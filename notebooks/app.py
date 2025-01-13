@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from huggingface_hub import from_pretrained_keras
 
-REPO_ID = "ai-or-not/ai-or-not-model"
+REPO_ID = "konerusudhir/ai-or-not-model"
 
 model = from_pretrained_keras(REPO_ID)
 
