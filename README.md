@@ -7,50 +7,10 @@ Demo : [Huggingface Space](https://huggingface.co/spaces/konerusudhir/ai-or-not-
 2. Training code can run on Mac or AWS. 
 3. F1 Score is 0.90 for Current Evaluation Dataset.
 
-# Sample code
-```
-from PIL import Image
-import numpy as np
-import tensorflow as tf
-from huggingface_hub import from_pretrained_keras
-
-# Download Model
-REPO_ID = "konerusudhir/ai-or-not-model"
-model = from_pretrained_keras(REPO_ID, token=True, force_download=True)
-
-# Read Image
-file_path = "examples/1-1900923-343813.jpg"
-image = Image.open(file_path)
-
-# Convert to RGB
-if image.mode != "RGB":
-    image = image.convert("RGB")
-
-# normalize to 0-1
-image = np.array(image) / 255.0
-
-# resize
-resized_image = tf.image.resize_with_pad(image, 224, 224)
-
-print(f"File: {file_path} Image shape: {resized_image.shape}")
-
-# Predict
-predictions = model(np.array([resized_image]))
-
-# Compute AI Probability
-real_probability = predictions[0][0]
-ai_probability = 1 - real_probability
-print(f"AI Image Prediction: {ai_probability:.2f}")
-
-```
-[Huggingface Model](https://huggingface.co/konerusudhir/ai-or-not-model)
-
-[Training Report from Weights and Biases](https://wandb.ai/makersplace/open-model/reports/AI-Generated-Image-Detection-Model-Report--VmlldzoxMDkyMzYzNA?accessToken=lu9435jahbicmqtnsrnfs76ctuxzb2p3ik7xi2tgk7i7k8sn02zv60hdnqbnq145)
-
 
 # Datasets
 Below are the datasets used for traiing and evaluating the model. Datasets are chosen solve the problem of
-identifying Low effort AI generated Crypto Art.
+identifying Low effort AI generated Crypto Art. Approxmately 1.35 Million images are used for trianing, 350K for Validation and 500K Images are used for testing. For more details refer [Training Report](https://wandb.ai/makersplace/open-model/reports/AI-Generated-Image-Detection-Model-Report--VmlldzoxMDkyMzYzNA?accessToken=lu9435jahbicmqtnsrnfs76ctuxzb2p3ik7xi2tgk7i7k8sn02zv60hdnqbnq145)
 
 <table>
   <tr>
@@ -119,8 +79,77 @@ identifying Low effort AI generated Crypto Art.
   </tr>
 </table>
 
+### **Evaluation and Performance**
+
+For evaluation, we employed multiple datasets to test the generalization capabilities of the model. Key evaluation metrics include precision, recall, and F1 score:
+
+
+<table>
+  <tr>
+   <td><strong>Evaluation Dataset</strong>
+   </td>
+   <td><strong>Precision</strong>
+   </td>
+   <td><strong>Recall</strong>
+   </td>
+   <td><strong>F1 Score</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>Combined Test Set
+   </td>
+   <td>0.95
+   </td>
+   <td>0.86
+   </td>
+   <td>0.90
+   </td>
+  </tr>
+</table>
+
+# Sample code
+
+Below is the sample code test the model on a single image. Refer notebooks folder for more examples.
+
+```
+from PIL import Image
+import numpy as np
+import tensorflow as tf
+from huggingface_hub import from_pretrained_keras
+
+# Download Model
+REPO_ID = "konerusudhir/ai-or-not-model"
+model = from_pretrained_keras(REPO_ID, token=True, force_download=True)
+
+# Read Image
+file_path = "examples/1-1900923-343813.jpg"
+image = Image.open(file_path)
+
+# Convert to RGB
+if image.mode != "RGB":
+    image = image.convert("RGB")
+
+# normalize to 0-1
+image = np.array(image) / 255.0
+
+# resize
+resized_image = tf.image.resize_with_pad(image, 224, 224)
+
+print(f"File: {file_path} Image shape: {resized_image.shape}")
+
+# Predict
+predictions = model(np.array([resized_image]))
+
+# Compute AI Probability
+real_probability = predictions[0][0]
+ai_probability = 1 - real_probability
+print(f"AI Image Prediction: {ai_probability:.2f}")
+
+```
+[Huggingface Model](https://huggingface.co/konerusudhir/ai-or-not-model)
+
 # Training
-Please set below env variables before runnning the pipeline.py.
+Please set below env variables before running the training pipeline(pipeline.py). Dataset tarfiles will be released in coming weeks.
 
 export WANDB_API_KEY=[API_KEY]
 
