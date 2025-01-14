@@ -152,6 +152,7 @@ print(f"AI Image Prediction: {ai_probability:.2f}")
 1. The goal of the model is to detect Low effort AI generated images.
 2. If multiple post processing steps are applied to images after AI generation, model might not be good 
    on detecting these type of images.
+3. Model might not be able to detect Hyper Realistic AI generated images from latest models
 
 # Training
 Please set below env variables before running the training pipeline(pipeline.py). Training details and Dataset tar files will be released in coming weeks.
