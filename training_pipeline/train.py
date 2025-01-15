@@ -27,7 +27,7 @@ def train_model(train_dataset, validation_dataset, current_config):
     model_architecture = current_config["MODEL_ARCHITECTURE"]
     if not (
         model_architecture >= ModelArchitectureEnum.VISIBLE_FEATURES
-        and model_architecture <= ModelArchitectureEnum.NOISE_RESIDUAL
+        and model_architecture <= ModelArchitectureEnum.VISIBLE_CONV_NEXT
     ):
         raise ValueError(f"Invalid model architecture: {model_architecture}")
 
@@ -39,8 +39,8 @@ def train_model(train_dataset, validation_dataset, current_config):
 
 def load_training_data(current_config):
     data_loader = DataLoader(current_config)
-    train_dataset = data_loader.load_and_augment_dataset(current_config["TF_TRAIN_DATASET_PATH"])
-    validation_dataset = data_loader.load_dataset(current_config["TF_VALIDATION_DATASET_PATH"])
+    train_dataset = data_loader.load_and_augment_dataset(PATH_CONFIG["TRAINING_DATASET_PATH"])
+    validation_dataset = data_loader.load_and_augment_dataset(PATH_CONFIG["VALIDATION_DATASET_PATH"])
     return train_dataset, validation_dataset
 
 
@@ -55,33 +55,18 @@ def update_path_config_with_pipeline_name(pipeline_name):
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    # Default Args
+    parser.add_argument("--pipeline_name", help="Name of the pipeline run", default=DEFAULT_PIPELINE_NAME)
+    parser.add_argument("--environment", help="Decides which AWS profile to use", default="local")
+
+    # SageMaker Container Args
     # Data, model, and output directories
     # model_dir is always passed in from SageMaker. By default this is a S3 path under the default bucket.
     parser.add_argument("--model_dir", type=str)
     parser.add_argument("--sm-model-dir", type=str, default=os.environ.get("SM_MODEL_DIR"))
     parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAINING"))
-    parser.add_argument("--pipeline_name", help="Name of the pipeline run", default=DEFAULT_PIPELINE_NAME)
-    parser.add_argument("--environment", help="Decides which AWS profile to use", default="local")
 
     return parser.parse_known_args()
-
-
-def get_directory_config(args):
-    # ----------------- S3 Directories ----------------- #
-    train_data_prefix = args.train
-    train_dataset_path = f"{train_data_prefix}/training_dataset"
-    validation_dataset_path = f"{train_data_prefix}/validation_dataset"
-    test_dataset_path = f"{train_data_prefix}/testing_datasets"
-    denoiser_model_path = "./cache/dncnn_s1_1028_0147_ai_48/saved_model"
-
-    return {
-        "TF_TRAIN_DATASET_PATH": train_dataset_path,
-        "TF_VALIDATION_DATASET_PATH": validation_dataset_path,
-        "TF_TEST_DATASET_PATH": test_dataset_path,
-        "DENOISER_MODEL_PATH": denoiser_model_path,
-        "MODEL_DIR": args.sm_model_dir,
-        "CHECKPOINTS_PATH": PATH_CONFIG["SM_CHECKPOINTS_PATH"],
-    }
 
 
 def setup_env_confg(args):
@@ -90,16 +75,15 @@ def setup_env_confg(args):
     tf.keras.utils.set_random_seed(CONFIGURATION["SEED"])
 
     # --------- Directory Config ---------
-    directory_config = get_directory_config(args)
+    if args.sm_model_dir:
+        CONFIGURATION["MODEL_DIR"] = args.sm_model_dir
 
     # --------- Set Mixed Precision ---------
     if CONFIGURATION["MIXED_PRECISION"]:
         tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
     # ------------- Current Config -------------
-    current_config = {**CONFIGURATION, **directory_config}
-
-    return current_config
+    return {**CONFIGURATION, **PATH_CONFIG}
 
 
 if __name__ == "__main__":
@@ -132,13 +116,21 @@ if __name__ == "__main__":
     log.info("Datasets created successfully")
 
     # Train the model
-    aiornot_classifier_model = train_model(train_dataset, validation_dataset, current_config)
+    aiornot_classifier_model = train_model(
+        train_dataset,
+        validation_dataset,
+        current_config,
+    )
     # aiornot_classifier_model = tf.keras.models.load_model(
     #     "/Users/skoneru/Downloads/400k_model/saved_model_rgb_classifier"
     # )
 
     # Test the model
-    evaluate_model(aiornot_classifier_model, current_config, wandb_run)
+    evaluate_model(
+        aiornot_classifier_model,
+        current_config,
+        wandb_run,
+    )
 
     # Finish wandb run
     wandb_run.finish()

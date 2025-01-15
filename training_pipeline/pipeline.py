@@ -25,7 +25,6 @@ PIPELINE_NAME = f"{PIPELINE_PREFIX}-{RUN_NAME_SUFFIX}"
 PATH_CONFIG = get_path_config(PIPELINE_NAME)
 CURRNET_CONFIG = get_config()
 ENVIRONMENT_VARIABLES = get_environment_variables()
-ROLE = "arn:aws:iam::767087296931:role/service-role/AmazonSageMaker-ExecutionRole-20230227T093535"
 
 # COMPUTE_INSTANCE_TYPE = "ml.c5.2xlarge"  # 8 vCPUs, 16 GiB $0.408 USD/hour
 # COMPUTE_INSTANCE_TYPE = "ml.m5.2xlarge"  # 8 vCPUs, 32 GiB $0.461 USD/hour
@@ -40,9 +39,9 @@ def create_processor_step(pipeline_session, environment):
 
     data_processor = TensorFlowProcessor(
         base_job_name=job_name,
-        framework_version="2.14.1",
+        framework_version="2.14",
         py_version="py310",
-        role=ROLE,
+        role=CURRNET_CONFIG["SM_ROLE"],
         instance_type=COMPUTE_INSTANCE_TYPE,
         instance_count=1,
         volume_size_in_gb=VOLUME_SIZE,
@@ -69,16 +68,16 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         checkpoint_s3_uri = None
         checkpoint_local_path = None
     else:
-        checkpoint_s3_uri = PATH_CONFIG["S3_TRAINING_CHECKPOINTS_PATH"]
-        checkpoint_local_path = PATH_CONFIG["SM_CHECKPOINTS_PATH"]
+        checkpoint_s3_uri = PATH_CONFIG["S3_CHECKPOINTS_PATH"]
+        checkpoint_local_path = PATH_CONFIG["CHECKPOINTS_PATH"]
 
     classifier_estimator = TensorFlow(
         entry_point="train.py",
-        role=ROLE,
+        role=CURRNET_CONFIG["SM_ROLE"],
         instance_count=1,
         instance_type=GPU_INSTANCE_TYPE,
         volume_size=VOLUME_SIZE,
-        framework_version="2.14.1",
+        framework_version="2.14",
         py_version="py310",
         source_dir=".",
         max_run=CURRNET_CONFIG["MaxRuntimeInSeconds"],
@@ -145,7 +144,7 @@ def execute_pipeline(args):
     )
 
     log.info(f"Pipeline Definition: {json.loads(pipeline.definition())}")
-    pipeline.upsert(role_arn=ROLE)
+    pipeline.upsert(role_arn=CURRNET_CONFIG["SM_ROLE"])
 
     execution = pipeline.start()
 

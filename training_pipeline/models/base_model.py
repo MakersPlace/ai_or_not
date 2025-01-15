@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import ReduceLROnPlateau
-from wandb.integration.keras import WandbCallback
+from wandb.integration.keras import WandbMetricsLogger
 
 
 class BaseModel:
@@ -61,6 +61,9 @@ class BaseModel:
         else:
             return file_path
 
+    def get_weights_path(self, file_path, model_name):
+        return f"{self.get_model_filepath(file_path, model_name=model_name)}.weights.h5"
+
     def get_callbacks(self, model_name=""):
         # Reduce LR On no Improvement
         reduce_lr = ReduceLROnPlateau(
@@ -86,7 +89,10 @@ class BaseModel:
         )
 
         best_weights_checkpoint = ModelCheckpoint(
-            self.get_model_filepath(self.best_weights_filepath, model_name=model_name),
+            self.get_weights_path(
+                self.best_weights_filepath,
+                model_name=model_name,
+            ),
             monitor=self.monitor,
             verbose=self.config["VERBOSE"],
             save_best_only=True,
@@ -96,7 +102,10 @@ class BaseModel:
         )
 
         model_checkpoint = ModelCheckpoint(
-            self.get_model_filepath(self.checkpoints_filepath, model_name=model_name),
+            self.get_weights_path(
+                self.checkpoints_filepath,
+                model_name=model_name,
+            ),
             monitor=self.monitor,
             verbose=self.config["VERBOSE"],
             save_best_only=False,
@@ -105,15 +114,25 @@ class BaseModel:
             save_freq="epoch",
         )
 
-        return [reduce_lr, early_stopping, best_weights_checkpoint, model_checkpoint, WandbCallback(save_model=False)]
+        return [
+            reduce_lr,
+            early_stopping,
+            best_weights_checkpoint,
+            model_checkpoint,
+            WandbMetricsLogger(),
+        ]
 
     def save_and_load_model(self, model):
         log.info("-------------------------------------------------")
-        best_weights_filepath = self.get_model_filepath(self.best_weights_filepath, model_name=model.name)
+        best_weights_filepath = self.get_weights_path(
+            self.best_weights_filepath,
+            model_name=model.name,
+        )
         model.load_weights(best_weights_filepath)
         log.info(f"Loaded best weights from {best_weights_filepath}")
 
         saved_model_filepath = self.get_model_filepath(self.saved_model_filepath, model_name=model.name)
+        saved_model_filepath = f"{saved_model_filepath}.keras"
         model.save(saved_model_filepath)
         log.info(f"Saved model in SavedModel format {saved_model_filepath}")
 

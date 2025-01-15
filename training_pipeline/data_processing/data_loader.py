@@ -12,7 +12,14 @@ class DataLoader:
 
     def load_dataset(self, directory):
         # ----------------- Load Dataset ----------------- #
-        current_dataset = tf.data.TFRecordDataset.load(path=str(directory), compression=self.config["COMPRESSION_TYPE"])
+        current_dataset = tf.data.TFRecordDataset.load(
+            path=str(directory),
+            compression=self.config["COMPRESSION_TYPE"],
+        )
+
+        # print sample image with shape and dtype
+        image = list(current_dataset.take(1))[0][0]
+        log.info(f"Sample Image Size: {image.shape}")
 
         return current_dataset
 
@@ -36,7 +43,10 @@ class DataLoader:
                 seed=self.config["SEED"],
             ),
             tf.keras.layers.Lambda(
-                lambda image: tf.image.random_flip_left_right(image, seed=self.config["SEED"]),
+                lambda image: tf.image.random_flip_left_right(
+                    image,
+                    seed=self.config["SEED"],
+                ),
                 name="random_flip_left_right",
                 dtype=tf.float32,
             ),
@@ -87,47 +97,6 @@ class DataLoader:
             )
 
         return dataset
-
-    def load_train_and_validate_datasets(self):
-        # ----------------- Load Dataset ----------------- #
-        dataset = self.load_dataset(self.config["TF_TRAIN_DATASET_PATH"])
-
-        # ----------------- Filter Dataset ----------------- #
-        dataset = dataset.filter(self.filter_non_empty_images)
-
-        # ----------------- Dataset Augmentation ----------------- #
-        common_augmentation = self.get_common_data_augmentation()
-        training_augmentation = self.get_training_data_augmentation()
-        augmentation = common_augmentation + training_augmentation
-
-        if len(augmentation) > 0:
-            self.print_augmentation_details(augmentation)
-            augmentation = tf.keras.Sequential(augmentation, name="data_augmentation")
-            dataset = dataset.map(
-                lambda image, label: (augmentation(image), label), num_parallel_calls=tf.data.AUTOTUNE
-            )
-
-        # ----------------- Split Dataset ----------------- #
-        length = self.config["APPROX_DATASET_SIZE"]
-        val_length = int(length * self.config["VALIDATION_DATA_RATIO"])
-        train_length = length - val_length
-
-        log.info(f"\tDatasets {self.config['TF_TRAIN_DATASET_PATH']}")
-        log.info(f"\tTrain dataset size: {(train_length)}")
-        log.info(f"\tVal dataset size: {(val_length)}")
-
-        train_dataset = dataset.skip(val_length).take(train_length)
-        validation_dataset = dataset.take(val_length)
-
-        self.print_sample(train_dataset)
-
-        # ----------------- Cache Dataset ----------------- #
-        if self.config["CACHE_DATASET"]:
-            log.info(f"\tCaching dataset in {self.cache_filepath}")
-            train_dataset = train_dataset.cache(self.cache_filepath + "_train")
-            validation_dataset = validation_dataset.cache(self.cache_filepath + "_validation")
-
-        return train_dataset, validation_dataset
 
     def print_augmentation_details(self, layers):
         log.info("\t------------------------------------------------------------------")

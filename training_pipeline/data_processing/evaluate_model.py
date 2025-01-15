@@ -135,7 +135,7 @@ def log_individual_dataset_metrics(current_model, config, wandb_run):
     multi_label_loss_dataframe = pd.DataFrame()
     counts_dataframe = pd.DataFrame()
 
-    testing_datasets = config["TF_TEST_DATASET_PATH"]
+    testing_datasets = config["TESTING_DATASET_PATH"]
     testing_datasets = tf.io.gfile.glob(f"{testing_datasets}/*")
 
     all_true_labels = None
@@ -233,5 +233,15 @@ def log_composite_dataset_metrics(multi_label_true_labels, multi_label_predicted
 def evaluate_model(current_model, config, wandb_run):
     current_model.trainable = False
 
-    all_true_labels, all_predicted_logits = log_individual_dataset_metrics(current_model, config, wandb_run)
-    log_composite_dataset_metrics(all_true_labels, all_predicted_logits, config, wandb_run)
+    all_true_labels, all_predicted_logits = log_individual_dataset_metrics(
+        current_model,
+        config,
+        wandb_run,
+    )
+
+    log_composite_dataset_metrics(
+        all_true_labels,
+        all_predicted_logits,
+        config,
+        wandb_run,
+    )

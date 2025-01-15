@@ -175,9 +175,13 @@ def create_test_datasets():
     test_label_counts: Dict[int, int] = {}
     dataset_length = 0
 
-    # TODO: Suppress warinig in package tensorflow/core/lib/png/png_io.cc:84]
-    # PNG warning: iCCP: known incorrect sRGB profile
-    for dataset_name, test_metadata_files in TEST_DATASET_DRECTORIES.items():
+    if CONFIGURATION["TEST_RUN"] and CONFIGURATION["APPROX_DATASET_SIZE"] <= 10_000:
+        # pick only 3 test directories
+        directories = list(TEST_DATASET_DRECTORIES.items())[:3]
+    else:
+        directories = TEST_DATASET_DRECTORIES.items()
+
+    for dataset_name, test_metadata_files in directories:
         log.info(f"Processing {dataset_name} Dataset")
 
         current_dataset: tf.data.Dataset = None
