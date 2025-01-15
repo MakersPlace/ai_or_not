@@ -1,16 +1,16 @@
 import tensorflow as tf
+from keras.initializers import GlorotUniform
+from keras.layers import Activation
+from keras.layers import Dense
+from keras.layers import Dropout
+from keras.layers import GlobalAveragePooling2D
+from keras.layers import InputLayer
+from keras.layers import Rescaling
+from keras.losses import SparseCategoricalCrossentropy
+from keras.metrics import SparseCategoricalAccuracy
+from keras.optimizers import Adam
+from keras.regularizers import L2
 from models.base_model import BaseModel
-from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import GlobalAveragePooling2D
-from tensorflow.keras.layers import InputLayer
-from tensorflow.keras.layers import Rescaling
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.regularizers import L2
 
 
 class VisibleFeaturesClassifier(BaseModel):

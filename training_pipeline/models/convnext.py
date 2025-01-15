@@ -1,17 +1,14 @@
 import tensorflow as tf
+from keras.applications import ConvNeXtTiny
+from keras.initializers import GlorotUniform
+from keras.layers import Dense
+from keras.layers import InputLayer
+from keras.layers import Rescaling
+from keras.losses import SparseCategoricalCrossentropy
+from keras.metrics import SparseCategoricalAccuracy
+from keras.optimizers import Adam
+from keras.regularizers import L2
 from models.base_model import BaseModel
-from tensorflow.keras.applications import ConvNeXtTiny
-from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import GlobalAveragePooling2D
-from tensorflow.keras.layers import InputLayer
-from tensorflow.keras.layers import Rescaling
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.regularizers import L2
 
 
 # extend callback factory with a new method
@@ -21,16 +18,16 @@ class VisibleConvNextClassifier(BaseModel):
 
     def get_backbone(self, weights):
         backbone = ConvNeXtTiny(
-            model_name="convnext_tiny",
-            include_top=False,
-            include_preprocessing=False,
+            include_top=True,
+            include_preprocessing=True,
             weights=weights,
-            classifier_activation="softmax",
+            pooling="max",
             input_shape=(
                 self.config["IM_SIZE"],
                 self.config["IM_SIZE"],
                 self.config["CHANNELS"],
             ),
+            classes=len(self.config["CLASS_NAMES"]),
         )
         backbone.trainable = self.config["TRAIN_BACKBONE"]
 
@@ -50,22 +47,24 @@ class VisibleConvNextClassifier(BaseModel):
         # Backbone Layers
         backbone = [
             self.get_backbone(weights=self.config["WEIGHTS"]),
-            GlobalAveragePooling2D(),
         ]
 
         # --------------------------------------------------------------
         # Head initialization
         # --------------------------------------------------------------
         head_layers = [
-            Dropout(self.config["DROPOUT_RATE"], name="top_dropout"),
+            # Dropout(self.config["DROPOUT_RATE"], name="top_dropout"),
             Dense(
-                len(self.config["CLASS_NAMES"]),
+                units=len(self.config["CLASS_NAMES"]),
+                activation="softmax",
                 kernel_regularizer=L2(self.config["REGULARIZATION_RATE"]),
                 kernel_initializer=GlorotUniform(seed=self.config["SEED"]),
             ),
-            Activation("softmax", dtype=tf.float32, name="predictions"),
         ]
-        model = tf.keras.Sequential(input_layers + backbone + head_layers, name="rgb_convnext_classifier")
+        model = tf.keras.Sequential(
+            input_layers + backbone + head_layers,
+            name="rgb_convnext_classifier",
+        )
 
         self.print_model_summary(model)
 

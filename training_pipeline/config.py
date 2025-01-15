@@ -189,6 +189,8 @@ def override_test_config(current_config):
 _CONFIG = {
     # ----------------- Model config ----------------- #
     "MODEL_ARCHITECTURE": ModelArchitectureEnum.VISIBLE_FEATURES,
+    "LOAD_PRETRAINED_WEIGHTS": False,
+    "WEIGHTS": "imagenet",
     "IM_SIZE": 224,
     "MIXED_PRECISION": True,  # FP16 training
     # ----------------- Training config ----------------- #
@@ -200,9 +202,6 @@ _CONFIG = {
     "LEARNING_RATE": 0.00001,
     "PATIENCE": 3,
     "MIN_DELTA": 0.0001,
-    # Default weights settings
-    "LOAD_PRETRAINED_WEIGHTS": False,
-    "WEIGHTS": "imagenet",
     "TRAIN_BACKBONE": True,
     "SEED": 9,
     "VERBOSE": 1,

@@ -36,7 +36,7 @@ GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
 
 def create_processor_step(pipeline_session, environment):
     job_name = "processing-step"
-    log.info(f"Running on instance type: {COMPUTE_INSTANCE_TYPE} with volume size: {VOLUME_SIZE}")
+    log.info(f"Running on instance type: {COMPUTE_INSTANCE_TYPE}")
 
     data_processor = TensorFlowProcessor(
         base_job_name=job_name,
@@ -45,7 +45,7 @@ def create_processor_step(pipeline_session, environment):
         role=CURRNET_CONFIG["SM_ROLE"],
         instance_type=COMPUTE_INSTANCE_TYPE,
         instance_count=1,
-        volume_size_in_gb=1_000,
+        volume_size_in_gb=1_000,  # More space needed for data generation
         max_runtime_in_seconds=CURRNET_CONFIG["MaxRuntimeInSeconds"],
         sagemaker_session=pipeline_session,
         env=ENVIRONMENT_VARIABLES,
@@ -66,7 +66,7 @@ def create_processor_step(pipeline_session, environment):
 
     cache_config = CacheConfig(
         enable_caching=True,
-        expire_after="P2d",  # 30-day
+        expire_after="P30d",  # 30-day
     )
 
     return ProcessingStep(
@@ -161,8 +161,10 @@ def execute_pipeline(args):
         ),
     )
 
+    # check if a pipeline with the same name already exists
+
     log.info(f"Pipeline Definition: {json.loads(pipeline.definition())}")
-    pipeline.upsert(role_arn=CURRNET_CONFIG["SM_ROLE"])
+    pipeline.update(role_arn=CURRNET_CONFIG["SM_ROLE"])
 
     execution = pipeline.start()
 
