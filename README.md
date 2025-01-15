@@ -162,3 +162,7 @@ export WANDB_API_KEY=[API_KEY]
 export WANDB_ENTITY=[entity]
 
 export WANDB_PROJECT=[project]
+
+export S3_BUCKET=[S3_BUCKET]
+
+export SM_ROLE=[SAGEMAKER_ROLE]
