@@ -14,6 +14,8 @@ from sagemaker.tensorflow import TensorFlowProcessor
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_context import LocalPipelineSession
 from sagemaker.workflow.pipeline_context import PipelineSession
+from sagemaker.workflow.pipeline_definition_config import PipelineDefinitionConfig
+from sagemaker.workflow.steps import CacheConfig
 from sagemaker.workflow.steps import ProcessingStep
 from sagemaker.workflow.steps import TrainingStep
 
@@ -30,7 +32,6 @@ ENVIRONMENT_VARIABLES = get_environment_variables()
 # COMPUTE_INSTANCE_TYPE = "ml.m5.2xlarge"  # 8 vCPUs, 32 GiB $0.461 USD/hour
 COMPUTE_INSTANCE_TYPE = "ml.m5.4xlarge"  # 16 vCPUs, 64 GiB $0.922 USD/hour
 GPU_INSTANCE_TYPE = "ml.p3.2xlarge"  # 8 vCPUs, 61 GiB, 1 GPU $3.825 USD/hour
-VOLUME_SIZE = 1_000
 
 
 def create_processor_step(pipeline_session, environment):
@@ -44,7 +45,7 @@ def create_processor_step(pipeline_session, environment):
         role=CURRNET_CONFIG["SM_ROLE"],
         instance_type=COMPUTE_INSTANCE_TYPE,
         instance_count=1,
-        volume_size_in_gb=VOLUME_SIZE,
+        volume_size_in_gb=1_000,
         max_runtime_in_seconds=CURRNET_CONFIG["MaxRuntimeInSeconds"],
         sagemaker_session=pipeline_session,
         env=ENVIRONMENT_VARIABLES,
@@ -55,10 +56,24 @@ def create_processor_step(pipeline_session, environment):
         source_dir=".",
         job_name=job_name,
         wait=False,
-        arguments=["--pipeline_name", PIPELINE_NAME, "--environment", environment],
+        arguments=[
+            "--pipeline_name",
+            PIPELINE_NAME,
+            "--environment",
+            environment,
+        ],
     )
 
-    return ProcessingStep(name=job_name, step_args=run_args)
+    cache_config = CacheConfig(
+        enable_caching=True,
+        expire_after="P2d",  # 30-day
+    )
+
+    return ProcessingStep(
+        name=job_name,
+        step_args=run_args,
+        cache_config=cache_config,
+    )
 
 
 def get_training_step(pipeline_session, training_data_uri, environment):
@@ -76,7 +91,7 @@ def get_training_step(pipeline_session, training_data_uri, environment):
         role=CURRNET_CONFIG["SM_ROLE"],
         instance_count=1,
         instance_type=GPU_INSTANCE_TYPE,
-        volume_size=VOLUME_SIZE,
+        volume_size=300,
         framework_version="2.14",
         py_version="py310",
         source_dir=".",
@@ -141,6 +156,9 @@ def execute_pipeline(args):
         name=f"{PIPELINE_PREFIX}",
         steps=[processing_step, training_step],
         sagemaker_session=pipeline_session,
+        pipeline_definition_config=PipelineDefinitionConfig(
+            use_custom_job_prefix=True,
+        ),
     )
 
     log.info(f"Pipeline Definition: {json.loads(pipeline.definition())}")
