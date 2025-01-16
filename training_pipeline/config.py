@@ -181,7 +181,7 @@ def override_test_config(current_config):
     if current_config["TEST_RUN"]:
         current_config["APPROX_DATASET_SIZE"] = 20_000
         current_config["N_EPOCHS"] = 2
-        current_config["TEST_DATASET_PERCENTAGE"] = 0.01
+        current_config["TEST_DATASET_PERCENTAGE"] = 1.0
 
         if current_config["IS_SAGEMAKER"]:
             current_config["MIXED_PRECISION"] = True
