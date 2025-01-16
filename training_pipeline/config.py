@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict
 from typing import List
 
+from models.clip import CLIPClassifier
 from models.convnext import VisibleConvNextClassifier
 from models.visible_features_classifier import VisibleFeaturesClassifier
 
@@ -32,11 +33,13 @@ log.basicConfig(
 class ModelArchitectureEnum:
     VISIBLE_FEATURES = 0
     VISIBLE_CONV_NEXT = 1
+    CLIP_CLASSIFIER = 2
 
 
 ARCHITECTURES = [
     VisibleFeaturesClassifier,
     VisibleConvNextClassifier,
+    CLIPClassifier,
 ]
 
 # --------------------------------------------------------------
@@ -176,7 +179,7 @@ def override_test_config(current_config):
     current_config["TEST_RUN"] = True
 
     if current_config["TEST_RUN"]:
-        current_config["APPROX_DATASET_SIZE"] = 10_000
+        current_config["APPROX_DATASET_SIZE"] = 20_000
         current_config["N_EPOCHS"] = 2
         current_config["TEST_DATASET_PERCENTAGE"] = 0.01
 
@@ -188,7 +191,7 @@ def override_test_config(current_config):
 
 _CONFIG = {
     # ----------------- Model config ----------------- #
-    "MODEL_ARCHITECTURE": ModelArchitectureEnum.VISIBLE_FEATURES,
+    "MODEL_ARCHITECTURE": ModelArchitectureEnum.CLIP_CLASSIFIER,
     "LOAD_PRETRAINED_WEIGHTS": False,
     "WEIGHTS": "imagenet",
     "IM_SIZE": 224,
@@ -325,7 +328,7 @@ def get_path_config(pipeline_name):
         path_config["TRAINING_DATASET_PATH"] = f"{local_data_generation_output_path}/training_dataset"
         path_config["VALIDATION_DATASET_PATH"] = f"{local_data_generation_output_path}/validation_dataset"
         path_config["TESTING_DATASET_PATH"] = f"{local_data_generation_output_path}/testing_datasets"
-        path_config["MODEL_DIR"] = f"{local_training_output_path}/model"
+        path_config["MODEL_DIR"] = f"{local_training_output_path}"
         path_config["CHECKPOINTS_PATH"] = f"{local_training_output_path}/checkpoints"
 
     return path_config

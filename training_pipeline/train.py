@@ -27,7 +27,7 @@ def train_model(train_dataset, validation_dataset, current_config):
     model_architecture = current_config["MODEL_ARCHITECTURE"]
     if not (
         model_architecture >= ModelArchitectureEnum.VISIBLE_FEATURES
-        and model_architecture <= ModelArchitectureEnum.VISIBLE_CONV_NEXT
+        and model_architecture <= ModelArchitectureEnum.CLIP_CLASSIFIER
     ):
         raise ValueError(f"Invalid model architecture: {model_architecture}")
 

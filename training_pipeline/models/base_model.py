@@ -1,10 +1,11 @@
 import logging as log
 from pathlib import Path
 
+import keras
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ReduceLROnPlateau
 from wandb.integration.keras import WandbMetricsLogger
 
 
@@ -32,7 +33,7 @@ class BaseModel:
 
     def get_backbone(self, weights):
         log.info(f"\tLoading backbone with weights: {weights}")
-        backbone = tf.keras.applications.EfficientNetV2S(
+        backbone = keras.applications.EfficientNetV2S(
             include_top=False,
             weights=weights,
             input_tensor=None,
@@ -131,12 +132,14 @@ class BaseModel:
         model.load_weights(best_weights_filepath)
         log.info(f"Loaded best weights from {best_weights_filepath}")
 
-        saved_model_filepath = self.get_model_filepath(self.saved_model_filepath, model_name=model.name)
-        saved_model_filepath = f"{saved_model_filepath}.keras"
+        saved_model_filepath = self.get_model_filepath(
+            self.saved_model_filepath,
+            model_name=model.name,
+        )
         model.save(saved_model_filepath)
         log.info(f"Saved model in SavedModel format {saved_model_filepath}")
 
-        model = tf.keras.saving.load_model(saved_model_filepath)
+        model = keras.models.load_model(saved_model_filepath)
         log.info(f"Loaded SavedModel model from {saved_model_filepath}")
 
         return model
